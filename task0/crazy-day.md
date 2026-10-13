@@ -1,8 +1,8 @@
 # 如何将项目git到仓库
 ## 第一步，打开项目
-![右键选择项目-复制路径(或者在文件夹里输入)](./images/step1.png)
+![右键选择项目-复制路径(或者在文件夹里输入)](../images/step1.png)
 ## 第二步，进入相应文件夹
-![右键选择Git Bash(如果你有下载Git的话)](./images/step2.png)
+![右键选择Git Bash(如果你有下载Git的话)](../images/step2.png)
 ## 第三步，进入小黑屏后
 ```bash
 git config --global user.email 123@qq.com      #你的邮箱
