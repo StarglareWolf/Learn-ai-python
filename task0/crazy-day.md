@@ -5,7 +5,7 @@
 ![右键选择Git Bash(如果你有下载Git的话)](../images/step2.png)
 ## 第三步，进入小黑屏后
 ```bash
-git config --global user.email 123@qq.com      #你的邮箱
+git config --global user.emai 123@qq.com      #你的邮箱
 git config --global user.name zhangsan         #你的用户名
 git init                                       #建立一个虚拟仓库
 git remote add origin https://what_you_create  #你想放置的仓库地址
