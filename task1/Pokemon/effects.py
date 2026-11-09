@@ -42,6 +42,7 @@ class HealEffect(Effect):
         self.amount = amount
 
     def apply(self, pokemon: "Pokemon") -> None:
+        # 需要改写一下，敌人扣血给己方输血
         pokemon.heal_self(self.amount)
         print(f"{pokemon.name} 恢复 {self.amount} HP!")
 
@@ -54,4 +55,11 @@ class ParalysisEffect(Effect):
 
     def apply(self, pokemon: "Pokemon") -> None:
         print(f"{pokemon.name} 受到 {self.duration} s 麻痹作用!")
+
+class Attackreduction(Effect):
+    name = "攻击减免"
+
+    def __init__(self, damage: int = 10, duration: int = 3) -> None:
+        super().__init__(duration)
+        self.damage = damage
 

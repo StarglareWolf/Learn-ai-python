@@ -4,7 +4,7 @@ import random
 import sys
 
 import pokemon
-
+from color import *
 
 def valid_choice(choice, range):
     # 判断输入的选择是否合法
@@ -60,6 +60,7 @@ class Play:
                 if chosen_pokemon.alive is True:
                     print(f"你选择了 {chosen_pokemon.name}")
                     self.current_player_pokemon = chosen_pokemon
+                    self.current_player_pokemon.distinguish_name(PLAYER, OPPONENT)
                     return chosen_pokemon  # 返回选择的 Pokemon
                 else:
                     print(f"{chosen_pokemon.name} 已昏厥! 重新选一个!")
@@ -72,6 +73,7 @@ class Play:
         chosen_pokemon = random.choice(available_pokemon)                         # 这样简洁了许多
         print(f"你的对手选择了 {chosen_pokemon}")
         self.current_computer_pokemon = chosen_pokemon
+        self.current_computer_pokemon.distinguish_name(PLAYER, OPPONENT)
         return chosen_pokemon  # 返回选择的 Pokemon
 
     def game_finished(self):
@@ -132,10 +134,8 @@ class Play:
         if self.current_player_pokemon is None or self.current_computer_pokemon is None:
             return
         print("\n-------回合开始-------")
-        print("玩家:",end = '  ')
-        self.current_player_pokemon.begin()
-        print("电脑:",end = '  ')
-        self.current_computer_pokemon.begin()
+        self.current_player_pokemon.begin(self.current_computer_pokemon)
+        self.current_computer_pokemon.begin(self.current_player_pokemon)
         self.check_game_status()
 
     def battle_round(self):
@@ -166,7 +166,9 @@ class Play:
 
 if __name__ == "__main__":
     # 显式，同时单独在列表里创建对象，防止两个列表“数据共享”，这样也是为了对抗时能分清楚谁是谁
-    user_pokemon = [pokemon.Bulbasaur(), pokemon.PikaChu()]
-    computer_pokemon = [pokemon.Bulbasaur(), pokemon.PikaChu()]
+    player = POSITION["player"]
+    enemy = POSITION["opponent"]
+    user_pokemon = [pokemon.Bulbasaur(player), pokemon.PikaChu(player)]
+    computer_pokemon = [pokemon.Bulbasaur(enemy), pokemon.PikaChu(enemy)]
     play = Play(user_pokemon, computer_pokemon)
     play.run()

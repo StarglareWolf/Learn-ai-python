@@ -3,14 +3,15 @@ import skills
 from skills import Skill
 from effects import Effect
 import random
-
+from color import *
 
 class Pokemon:
     name: str
     type: str
 
-    def __init__(self, hp: int, attack: int, defense: int, dodge_rate: int) -> None:
+    def __init__(self, master:str, hp: int, attack: int, defense: int, dodge_rate: int) -> None:
         # 初始化 Pokemon 的属性
+        self.master = master
         self.hp = hp                                # 当前血量
         self.max_hp = hp                            # 最大血量
         self.attack = attack                        # 攻击
@@ -19,10 +20,17 @@ class Pokemon:
         self.alive = True                           # 生存状态
         self.statuses = []                          # 状态效果
         self.dodge_rate = dodge_rate                  # 躲闪率
+        self.last_round_dodged = False             # 电属性专用
 
     def initialize_skills(self):
         # 抽象方法，子类应实现具体技能初始化
         raise NotImplementedError
+
+    def distinguish_name(self, player_color, computer_color):
+        if self.master == POSITION["player"]:
+            self.name = color(self.name, player_color)
+        elif self.master == POSITION["opponent"]:
+            self.name = color(self.name, computer_color)
 
     def use_skill(self, skill: Skill, opponent: Pokemon):
         # 使用技能
@@ -41,7 +49,9 @@ class Pokemon:
 
     def dodge_success(self):
         if random.randint(1, 100) <= self.dodge_rate:
+            self.last_round_dodged = True
             return True
+        self.last_round_dodged = False
         return False
 
     def receive_damage(self, damage):
@@ -80,7 +90,7 @@ class Pokemon:
         # 计算属性克制的抽象方法，具体实现由子类提供
         raise NotImplementedError
 
-    def begin(self):
+    def begin(self, opponent: Pokemon):
         # 新回合开始时触发的方法
         pass
 
@@ -104,7 +114,7 @@ class GrassPokemon(Pokemon):
 
         return effectiveness
 
-    def begin(self):
+    def begin(self, opponent: Pokemon):
         # 每个回合开始时执行玻璃属性特性
         self.grass_attribute()
 
@@ -115,16 +125,16 @@ class GrassPokemon(Pokemon):
         if self.hp > self.max_hp:
             self.hp = self.max_hp
         print(
-            f"{self.name} 恢复了 {amount} HP! 当前 HP: {self.hp}/{self.max_hp}"
+            f"{self.master}: {self.name} 恢复了 {amount} HP! 当前 HP: {self.hp}/{self.max_hp}"
         )
 
 # Bulbasaur 类，继承自 GrassPokemon    妙蛙种子
 class Bulbasaur(GrassPokemon):
     name = "妙蛙种子"    # 默认 type 为 GrassPokemon 的 type
 
-    def __init__(self, hp=100, attack=50, defense=10, dodge_rate = 10) -> None:
+    def __init__(self, master, hp=100, attack=50, defense=10, dodge_rate = 10) -> None:
         # 初始化 Bulbasaur 的属性
-        super().__init__(hp, attack, defense, dodge_rate)    # 调用父类的构造函数
+        super().__init__(master, hp, attack, defense, dodge_rate)    # 调用父类的构造函数
 
     def initialize_skills(self):
         # 初始化技能，具体技能是 SeedBomb 和 ParasiticSeeds
@@ -144,19 +154,52 @@ class ElectricPokemon(Pokemon):
             effectiveness = 0.5
         return effectiveness
 
-    def begin(self):
-        self.electric_attribute()
+    def begin(self, opponent: Pokemon):
+        if self.last_round_dodged:
+            skill = random.choice(self.skills)
+            print(f"上一回合 {self.name} 成功闪避, 本回合随机触发技能 {skill.name} !")
+            skill.execute(self, opponent)
+        pass
 
-    # 这里先这样子处理，等一下来改
-    def electric_attribute(self):
-        if self.dodge_success():
-            return self.skills
 
 class PikaChu(ElectricPokemon):
     name = "皮卡丘"
 
-    def __init__(self, hp = 80, attack = 35, defense = 5, dodge_rate = 30) -> None:
-        super().__init__(hp, attack, defense, dodge_rate)
+    def __init__(self, master, hp = 80, attack = 35, defense = 5, dodge_rate = 30) -> None:
+        super().__init__(master, hp, attack, defense, dodge_rate)
 
     def initialize_skills(self):
         return [skills.Thunderbolt(damage = self.attack), skills.QuickAttack(damage = self.attack)]
+
+
+class WaterPokemon(Pokemon):
+    type = "水"
+
+    def type_effectiveness(self, opponent: Pokemon):
+        # 针对敌方 Pokemon 的类型，调整效果倍率
+        effectiveness = 1.0     # 效果倍率
+        opponent_type = opponent.type
+
+        if opponent_type == "火":
+            effectiveness = 2.0
+        elif opponent_type == "电":
+            effectiveness = 0.5
+
+        return effectiveness
+
+    def begin(self, opponent: Pokemon):
+        # 每个回合开始时执行玻璃属性特性
+        self.water_attribute()
+
+    def water_attribute(self):
+        pass
+
+
+class Squirtle(WaterPokemon):
+    name = "杰尼龟"
+
+    def __init__(self, master, hp=80, attack=25, defense=20, dodge_rate= 20) -> None:
+        super().__init__(master, hp, attack, defense, dodge_rate)
+
+    def initialize_skills(self):
+        return [skills.Aquajet(damage = self.attack), skills.Shield(defense_rate = 50)]

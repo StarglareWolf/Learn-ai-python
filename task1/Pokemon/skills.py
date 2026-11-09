@@ -126,4 +126,30 @@ class QuickAttack(Skill):
             print(f"本回合技能 {self.name} 对 {opponent.name} 的二次攻击失败。")
 
 
+class Aquajet(Skill):
+    name = "Aquajet."
+    def __init__(self, damage: int, activation_chance: int = 100) -> None:
+        super().__init__(damage)
+        self.activation_chance = activation_chance
+
+    def execute(self, user: "Pokemon", opponent: "Pokemon") -> None:
+        if opponent.dodge_success():
+            print(f"{opponent.name} 躲开了这次攻击!")
+            return
+        damage = self.change_damage(user, opponent)
+        damage *= 1.4
+        print(
+            f"{user.name} 使用 {self.name}, 对 {opponent.name} 造成 {damage} 点伤害 "
+        )
+
+class Shield(Skill):
+    name = "Shield."
+    def __init__(self, damage: int, activation_chance: int = 100) -> None:
+        super().__init__(damage)
+        self.activation_chance = activation_chance
+
+    def execute(self, user: "Pokemon", opponent: "Pokemon") -> None:
+        if random.randint(1, 100) <= self.activation_chance:
+            opponent.add_status_effect(effects.Attackreduction())
+
 
